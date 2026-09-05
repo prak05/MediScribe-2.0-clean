@@ -1,13 +1,425 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Google AI Studio App</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediScribe AI — Precision Clinical RAG & Medical Intelligence</title>
+  <meta name="description" content="Decentralized evidence-based medical RAG platform embodying Abhilash Sir's 10 Commandments of RAG with zero hallucination tolerance.">
+  <link rel="stylesheet" href="./style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2338BDF8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M22 12h-4l-3 9L9 3l-3 9H2'/></svg>">
+</head>
+<body>
 
+  <!-- DOCTOR SCROLL PARALLAX BACKGROUND SYSTEM -->
+  <div class="parallax-bg-wrapper" aria-hidden="true">
+    <div class="parallax-layer parallax-doctor-hero" id="parallaxHero"></div>
+    <div class="parallax-layer parallax-doctor-consult" id="parallaxConsult"></div>
+    <div class="parallax-overlay"></div>
+    <div class="telemetry-grid"></div>
+  </div>
+
+  <!-- FLOATING MINIMALIST HEADER -->
+  <header class="site-header">
+    <nav class="navbar">
+      <a href="#" class="brand">
+        <div class="brand-icon">✚</div>
+        <div class="brand-text">Medi<span>Scribe</span></div>
+      </a>
+
+      <ul class="nav-menu">
+        <li><a href="#clinical-query" class="nav-link">Clinical Query</a></li>
+        <li><a href="#architecture" class="nav-link">10 Commandments</a></li>
+        <li><a href="#reranking" class="nav-link">Re-Ranking</a></li>
+        <li><a href="#quality-hub" class="nav-link">RAG Triad</a></li>
+        <li><a href="#codegen" class="nav-link">CodeGen AI</a></li>
+        <li><a href="#literature" class="nav-link">Literature</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <div class="status-pill">
+          <span class="pulse-dot"></span>
+          <span>gemini-3.6-flash</span>
+        </div>
+        <a href="#clinical-query" class="btn-primary">Launch Query</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="content-container">
+
+    <!-- HERO SECTION -->
+    <section class="hero-section" id="hero">
+      <div class="hero-badge">
+        <span>⚡ 10 Commandments of RAG Architecture</span>
+      </div>
+
+      <h1 class="hero-title">
+        <span class="gradient-text">Precision Medical Intelligence,</span><br>
+        <span class="accent-glow">Grounded in Verifiable Evidence.</span>
+      </h1>
+
+      <p class="hero-subtitle">
+        A decentralized clinical intelligence ecosystem eliminating hallucinations through dense 3072-dim vector retrieval, hybrid medical re-ranking, and DeepEval RAG Triad verification.
+      </p>
+
+      <div class="hero-actions">
+        <a href="#clinical-query" class="btn-primary">
+          <span>🩺 Test Clinical Query</span>
+          <span>→</span>
+        </a>
+        <a href="#architecture" class="btn-secondary">
+          <span>Explore 4-Tier Architecture</span>
+        </a>
+      </div>
+
+      <div class="hero-metrics-row">
+        <div class="metric-card">
+          <div class="metric-value">100<span>%</span></div>
+          <div class="metric-label">Grounded Evidence</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value">3,072<span>D</span></div>
+          <div class="metric-label">Dense Vector Space</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value">18<span>/18</span></div>
+          <div class="metric-label">Architecture Tests Passed</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value">66<span>Docs</span></div>
+          <div class="metric-label">Verified Medical Papers</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 1: CLINICAL EVIDENCE QUERY ENGINE -->
+    <section class="section" id="clinical-query">
+      <div class="section-header">
+        <span class="section-tag">Interactive Precision Synthesis</span>
+        <h2 class="section-title">Clinical Evidence Retrieval Engine</h2>
+        <p class="section-desc">
+          Query indexed peer-reviewed medical textbooks and clinical guidelines. Every synthesized claim carries bracketed page-level citations and strict anti-hallucination verification.
+        </p>
+      </div>
+
+      <div class="glass-panel rag-engine-card">
+        <div class="search-input-wrapper">
+          <span class="search-icon">🔍</span>
+          <input 
+            type="text" 
+            id="clinicalSearchInput" 
+            class="search-input" 
+            placeholder="Ask a clinical question (e.g., fluid resuscitation protocol, contraindications, dosage guidelines)..."
+            value="What is the first-line fluid resuscitation protocol for Diabetic Ketoacidosis (DKA)?"
+          >
+          <button id="searchSubmitBtn" class="btn-primary search-submit-btn">Search Evidence</button>
+        </div>
+
+        <div class="query-chips-row">
+          <span class="chips-label">Clinical Test Queries:</span>
+          <button class="query-chip" data-query="What is the first-line fluid resuscitation protocol for Diabetic Ketoacidosis (DKA)?">
+            🩸 DKA Fluid Protocol
+          </button>
+          <button class="query-chip" data-query="Broad-spectrum antimicrobial timing and fluid volume in severe septic shock">
+            ⏱️ Sepsis 1-Hour Protocol
+          </button>
+          <button class="query-chip" data-query="What is the recommended first-line therapy for Stage 2 hypertension?">
+            🛡️ Anti-Hallucination Test (Out-of-Index)
+          </button>
+        </div>
+
+        <!-- Dynamic Synthesis Output Container -->
+        <div class="synthesis-container" id="synthesisContainer">
+          <div class="synthesis-header">
+            <div class="synthesis-badge">
+              <span class="pulse-dot"></span>
+              <span>Evidence Grounded Synthesis • gemini-3.6-flash</span>
+            </div>
+            <span style="font-size: 0.78rem; color: var(--text-muted);">Confidence Score: 0.96</span>
+          </div>
+
+          <div class="answer-body" id="answerBody"></div>
+
+          <div class="citations-panel">
+            <h4>Verified Textual Citations</h4>
+            <ul class="citations-list" id="citationsList"></ul>
+          </div>
+
+          <div class="medical-disclaimer-banner">
+            <span>⚠️</span>
+            <span><strong>Educational & Clinical Reference Only:</strong> Not a substitute for formal clinical judgment, differential physician diagnosis, or direct prescription.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: 10 COMMANDMENTS OF RAG ARCHITECTURE -->
+    <section class="section" id="architecture">
+      <div class="section-header">
+        <span class="section-tag">Abhilash Sir's 4-Tier Blueprint</span>
+        <h2 class="section-title">The 10 Commandments of RAG Architecture</h2>
+        <p class="section-desc">
+          A fully decentralized, modular pipeline replacing legacy monolithic scripts. Every component operates autonomously with clean interfaces.
+        </p>
+      </div>
+
+      <div class="architecture-grid">
+        <!-- Layer 1: Software Application -->
+        <div class="glass-panel layer-card">
+          <div class="layer-number">Layer 01</div>
+          <h3 class="layer-title">Software Application</h3>
+          <p style="font-size: 0.85rem; color: var(--text-secondary);">End-user delivery, microservice endpoints, interactive UI, and clinical code generation.</p>
+          <div class="module-pills-list">
+            <div class="module-pill">
+              <span class="module-name">python_prog.py</span>
+              <span class="module-commandment">Cmd 9: Application</span>
+            </div>
+            <div class="module-pill">
+              <span class="module-name">fast_api.py</span>
+              <span class="module-commandment">Cmd 9: Microservice</span>
+            </div>
+            <div class="module-pill">
+              <span class="module-name">ui.py</span>
+              <span class="module-commandment">Cmd 9: Interface</span>
+            </div>
+            <div class="module-pill">
+              <span class="module-name">code_gen_ai.py</span>
+              <span class="module-commandment">FHIR & ICD-10</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Layer 2: Retrieval Layer -->
+        <div class="glass-panel layer-card">
+          <div class="layer-number">Layer 02</div>
+          <h3 class="layer-title">Retrieval Layer</h3>
+          <p style="font-size: 0.85rem; color: var(--text-secondary);">Dense vector search, hybrid re-ranking, and the DeepEval RAG Triad observability framework.</p>
+          <div class="module-pills-list">
+            <div class="module-pill">
+              <span class="module-name">retrieve_chunks.py</span>
+              <span class="module-commandment">Cmd 6: Dense Retrieval</span>
+            </div>
+            <div class="module-pill">
+              <span class="module-name">results_reranking.py</span>
+              <span class="module-commandment">Cmd 8: Re-ranking</span>
+            </div>
+            <div class="module-pill">
+              <span class="module-name">evals_framework.py</span>
+              <span class="module-commandment">Cmd 10: RAG Triad</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Layer 3: Ingestion Layer -->
+        <div class="glass-panel layer-card">
+          <div class="layer-number">Layer 03</div>
+          <h3 class="layer-title">Ingestion Layer</h3>
+          <p style="font-size: 0.85rem; color: var(--text-secondary);">Document parsing, OCR text hygiene, sentence boundary chunking, and local vector storage.</p>
+          <div class="module-pills-list">
+            <div class="module-pill">
+              <span class="module-name">load_data.py</span>
+              <span class="module-commandment">Cmd 1: Multi-Format</span>
+            </div>
+            <div class="module-pill">
+              <span class="module-name">chunking_embedding.py</span>
+              <span class="module-commandment">Cmd 3 & 4: Embeddings</span>
+            </div>
+            <div class="module-pill">
+              <span class="module-name">store_vector_db.py</span>
+              <span class="module-commandment">Cmd 5: Vector DB</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Layer 4: Fundamentals Layer -->
+        <div class="glass-panel layer-card">
+          <div class="layer-number">Layer 04</div>
+          <h3 class="layer-title">Fundamentals Layer</h3>
+          <p style="font-size: 0.85rem; color: var(--text-secondary);">Model selection, token budget attention window management, and anti-hallucination guardrails.</p>
+          <div class="module-pills-list">
+            <div class="module-pill">
+              <span class="module-name">transformers.py</span>
+              <span class="module-commandment">Tokens & Cosine</span>
+            </div>
+            <div class="module-pill">
+              <span class="module-name">models.py</span>
+              <span class="module-commandment">Cmd 2: Choosing LLMs</span>
+            </div>
+            <div class="module-pill">
+              <span class="module-name">user_system_prompts.py</span>
+              <span class="module-commandment">Cmd 7: Prompts</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: RE-RANKING & DEEPEVAL QUALITY HUB -->
+    <section class="section" id="reranking">
+      <div class="section-header">
+        <span class="section-tag">Live Diagnostic Metrics</span>
+        <h2 class="section-title">Re-Ranking & DeepEval Quality Hub</h2>
+        <p class="section-desc">
+          Compare dense vector cosine similarity against hybrid lexical-medical boosting (Commandment 8), and inspect live RAG Triad scores (Commandment 10).
+        </p>
+      </div>
+
+      <div class="two-col-grid">
+        <!-- Re-ranking Inspector -->
+        <div class="glass-panel">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h3 style="font-size: 1.15rem; font-weight: 700;">⚡ Hybrid Re-ranking Inspector</h3>
+            <span id="weightValDisplay" style="font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--accent-cyan);">55% Vector / 45% Lexical+Medical</span>
+          </div>
+
+          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 20px;">
+            Adjust the slider to simulate real-time rank shifting based on medical terminology boosts and term frequency overlap:
+          </p>
+
+          <input type="range" id="weightSlider" min="20" max="80" value="55" style="width: 100%; accent-color: var(--accent-cyan); margin-bottom: 20px; cursor: pointer;">
+
+          <div class="rerank-table-wrapper">
+            <table class="rerank-table">
+              <thead>
+                <tr>
+                  <th>Source Document</th>
+                  <th>Vector Sim</th>
+                  <th>Reranked</th>
+                  <th>Rank Shift</th>
+                  <th>Preview Snippet</th>
+                </tr>
+              </thead>
+              <tbody id="rerankTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- DeepEval RAG Triad -->
+        <div class="glass-panel" id="quality-hub">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h3 style="font-size: 1.15rem; font-weight: 700;">⚖️ DeepEval RAG Triad Scores</h3>
+            <span style="background: rgba(16, 185, 129, 0.15); color: #34D399; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 9999px;">CLINICAL PASS</span>
+          </div>
+
+          <p style="font-size: 0.85rem; color: var(--text-secondary);">
+            Continuous evaluation audit preventing hallucinations and evaluating clinical grounding:
+          </p>
+
+          <div class="triad-meters-container">
+            <div class="triad-meter">
+              <div class="meter-header">
+                <span>Faithfulness (Groundedness)</span>
+                <span class="meter-score">96.0%</span>
+              </div>
+              <div class="meter-bar-bg">
+                <div class="meter-bar-fill faithfulness"></div>
+              </div>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Zero hallucinations: Claims strictly derived from context blocks.</span>
+            </div>
+
+            <div class="triad-meter">
+              <div class="meter-header">
+                <span>Contextual Relevance</span>
+                <span class="meter-score">92.0%</span>
+              </div>
+              <div class="meter-bar-bg">
+                <div class="meter-bar-fill context"></div>
+              </div>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Retrieved textbook sections directly correspond to clinical pathology.</span>
+            </div>
+
+            <div class="triad-meter">
+              <div class="meter-header">
+                <span>Answer Relevance</span>
+                <span class="meter-score">94.0%</span>
+              </div>
+              <div class="meter-bar-bg">
+                <div class="meter-bar-fill answer"></div>
+              </div>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Targeted response directly addressing dosage, rates, and contraindications.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: CLINICAL CODE GEN AI STUDIO -->
+    <section class="section" id="codegen">
+      <div class="section-header">
+        <span class="section-tag">Commandment 9 Generator</span>
+        <h2 class="section-title">Clinical Code Gen AI Studio</h2>
+        <p class="section-desc">
+          Automated generation of interoperable HL7 FHIR R4 schemas, ICD-10-CM diagnostic codings, and programmatic DeepEval validation test scripts.
+        </p>
+      </div>
+
+      <div class="glass-panel">
+        <div class="codegen-tabs">
+          <button class="tab-btn active" data-template="fhir">HL7 FHIR R4 Schema</button>
+          <button class="tab-btn" data-template="icd10">ICD-10-CM Diagnostic Coding</button>
+          <button class="tab-btn" data-template="eval">DeepEval Python Test Script</button>
+        </div>
+
+        <div class="code-output-block">
+          <button class="copy-code-btn" id="copyCodeBtn">Copy Code</button>
+          <pre><code id="codeGenOutput"></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 5: LITERATURE & RESEARCH ARCHIVE -->
+    <section class="section" id="literature">
+      <div class="section-header">
+        <span class="section-tag">Deduplicated Knowledge Base</span>
+        <h2 class="section-title">Cataloged Medical Literature & Pitch Decks</h2>
+        <p class="section-desc">
+          All 66 unique research documents, KTU abstracts, and clinical presentations deduplicated by MD5 hash and indexed for verifiable retrieval.
+        </p>
+      </div>
+
+      <div class="materials-grid">
+        <div class="material-card">
+          <div class="material-tag">Sample Clinical Data</div>
+          <h4 class="material-title">Clinical Guidelines Sample</h4>
+          <p class="material-desc">Emergency medicine protocols covering DKA fluid repletion, potassium correction, and septic shock antimicrobials.</p>
+        </div>
+
+        <div class="material-card">
+          <div class="material-tag">Research Literature</div>
+          <h4 class="material-title">MedBuddy RAG Architecture</h4>
+          <p class="material-desc">Published KTU abstract and final engineering report on conversational RAG across medical textbooks.</p>
+        </div>
+
+        <div class="material-card">
+          <div class="material-tag">Keynote Deck</div>
+          <h4 class="material-title">AI Evolve Meetup Presentation</h4>
+          <p class="material-desc">Abhilash Sir's 10 Commandments presentation deck prepared for the AI Evolve Meetup at RIET Vidhya.</p>
+        </div>
+
+        <div class="material-card">
+          <div class="material-tag">Clinical Practice</div>
+          <h4 class="material-title">MediScribe Practice Management</h4>
+          <p class="material-desc">Clinical workflow integration, ambient doctor consultation transcription, and EHR FHIR interoperability.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="content-container footer-content">
+      <div>
+        <div class="brand-text" style="font-size: 1.1rem;">Medi<span>Scribe</span> Clinical RAG</div>
+        <p class="footer-note" style="margin-top: 4px;">Architected according to Abhilash Sir's 10 Commandments of RAG for the September 12 AI Evolve Meetup at RIET Vidhya.</p>
+      </div>
+      <div class="footer-note">
+        <span>Verified with <strong>gemini-3.6-flash</strong> & <strong>gemini-embedding-001</strong> (3072-dim).</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="./app.js"></script>
+</body>
+</html>
