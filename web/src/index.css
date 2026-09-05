@@ -1,0 +1,104 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-apple-blue: #007AFF;
+  --color-apple-purple: #5856D6;
+  --color-apple-bg: #F2F2F7;
+  --color-apple-card: #FFFFFF;
+  --color-apple-text: #000000;
+  --color-apple-secondary-text: #8E8E93;
+
+  --color-dark-bg: #000000;
+  --color-dark-card: #1C1C1E;
+  --color-dark-text: #FFFFFF;
+  --color-dark-secondary-text: #8E8E93;
+}
+
+@layer base {
+  body {
+    @apply bg-apple-bg text-apple-text font-sans antialiased selection:bg-apple-blue/20 transition-colors duration-300;
+  }
+  .dark body {
+    @apply bg-dark-bg text-dark-text;
+  }
+}
+
+/* Apple Journal Specific Styles */
+.journal-card {
+  @apply bg-apple-card rounded-[1.5rem] p-5 shadow-[0_2px_10px_rgba(0,0,0,0.04)] border border-black/[0.02] transition-all duration-300;
+}
+.dark .journal-card {
+  @apply bg-dark-card border-white/[0.05] shadow-none;
+}
+
+.journal-card:active {
+  @apply scale-[0.98] bg-slate-50;
+}
+.dark .journal-card:active {
+  @apply bg-white/[0.05];
+}
+
+.glass-header {
+  @apply bg-white/80 backdrop-blur-xl border-b border-black/[0.05] sticky top-0 z-40 transition-colors duration-300;
+}
+.dark .glass-header {
+  @apply bg-black/80 border-white/[0.1];
+}
+
+.fab-apple {
+  @apply w-14 h-14 bg-apple-blue/90 backdrop-blur-md text-white rounded-full shadow-[0_8px_24px_rgba(0,122,255,0.3)] flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95;
+}
+
+.segmented-control {
+  @apply flex bg-slate-200/50 p-1 rounded-xl w-fit transition-colors duration-300;
+}
+.dark .segmented-control {
+  @apply bg-white/10;
+}
+
+.segmented-item {
+  @apply px-6 py-1.5 rounded-lg text-sm font-semibold transition-all cursor-pointer;
+}
+
+.segmented-item-active {
+  @apply bg-white text-apple-text shadow-sm;
+}
+.dark .segmented-item-active {
+  @apply bg-white/20 text-white;
+}
+
+.segmented-item-inactive {
+  @apply text-slate-500 hover:text-slate-900;
+}
+.dark .segmented-item-inactive {
+  @apply text-white/40 hover:text-white;
+}
+
+/* Animations */
+@keyframes appleSlideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.animate-apple-slide-up {
+  animation: appleSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes appleFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-apple-fade-in {
+  animation: appleFadeIn 0.3s ease-out;
+}
+
+/* Markdown Styles */
+.markdown-body h1 { @apply text-2xl font-bold mb-4 font-sans tracking-tight; }
+.markdown-body h2 { @apply text-xl font-bold mb-3 font-sans tracking-tight; }
+.markdown-body p { @apply mb-4 leading-relaxed text-slate-700; }

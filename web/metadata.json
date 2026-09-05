@@ -1,0 +1,7 @@
+{
+  "name": "MediScribe AI",
+  "description": "A clinician-first, RAG-powered clinical journaling and patient management platform.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}

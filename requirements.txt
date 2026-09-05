@@ -1,0 +1,13 @@
+# MediScribe Clinical RAG Dependencies
+streamlit>=1.29.0
+fastapi>=0.110.0
+uvicorn>=0.28.0
+pypdf>=4.0.0
+python-dotenv>=1.0.0
+requests>=2.31.0
+google-genai>=0.3.0
+llama-index-core>=0.10.0
+pydantic>=2.6.0
+numpy>=1.24.0
+pandas>=2.0.0
+pytest>=8.0.0

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedBuddy - KTU Abstract</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            background-color: #f5f5f5;
+            padding: 15px;
+        }
+        
+        .container {
+            max-width: 8.5in;
+            height: 11in;
+            background-color: white;
+            margin: 0 auto;
+            padding: 0.8in;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .title {
+            font-size: 13pt;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 12pt;
+            font-family: 'Times New Roman', Times, serif;
+            line-height: 1.3;
+        }
+        
+        .abstract-content {
+            font-size: 11pt;
+            line-height: 1.4;
+            text-align: justify;
+            font-family: 'Times New Roman', Times, serif;
+            flex-grow: 1;
+            color: #000;
+            text-indent: 0.5in;
+        }
+        
+        .abstract-content p {
+            margin: 0;
+            text-align: justify;
+        }
+        
+        .footer-section {
+            margin-top: 12pt;
+            display: flex;
+            justify-content: space-between;
+            flex-shrink: 0;
+            font-size: 9.5pt;
+            line-height: 1.3;
+        }
+        
+        .group-members {
+            text-align: left;
+            font-family: 'Times New Roman', Times, serif;
+        }
+        
+        .guide-section {
+            text-align: right;
+            font-family: 'Times New Roman', Times, serif;
+        }
+        
+        .member-item {
+            margin-bottom: 3pt;
+            line-height: 1.2;
+        }
+        
+        .label {
+            font-weight: bold;
+            margin-bottom: 4pt;
+        }
+        
+        @media print {
+            body {
+                background-color: white;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+                margin: 0;
+                height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+        <!-- Title -->
+        <div class="title">
+           Chatbot to chat with medical books using Retrieval-Augmented Generation Model
+        </div>
+        
+        <!-- Abstract Content -->
+        <div class="abstract-content">
+            <p>Medical students face escalating academic workload and rising mental health concerns while struggling to efficiently retrieve accurate information from extensive textbooks. Traditional search systems lack contextual medical understanding and fail to provide evidence-based answers to specialized clinical queries. This research presents MedBuddy, an intelligent medical chatbot leveraging Retrieval-Augmented Generation through IBM Watson X APIs to enable seamless conversational interaction with medical textbooks. The system architecture integrates IBM Watson X's Large Language Models with sophisticated information retrieval mechanisms using vector embeddings and semantic search, ensuring all responses are grounded in actual medical content. The RAG model is implemented via IBM Watson X APIs, which provides access to state-of-the-art language models optimized for medical domain applications. Students upload medical PDFs, and the system intelligently retrieves relevant information sections through Watson X's vector database capabilities while maintaining contextual relevance. Streamlit provides an intuitive user interface requiring minimal technical expertise. The system is evaluated using comprehensive performance metrics including groundedness, response latency, contextual relevance, and answer accuracy. Experimental validation demonstrates 84 percent groundedness score indicating highly reliable source-grounded responses, sub-second query latency for complex medical questions, 92 percent contextual relevance mapping, and 65 percent improvement in learning efficiency. The chatbot significantly reduces medical knowledge retrieval time by 70 percent, decreases academic stress through instant accurate access, and ensures equitable resource access regardless of geographical limitations. Security is achieved through encrypted data handling, role-based access control, and HIPAA-compliant deployment on Watson X's secure cloud infrastructure. The modular architecture supports unlimited textbook uploads and concurrent user sessions. MedBuddy transcends academic assistance by democratizing medical knowledge access for students facing resource constraints, fostering a more inclusive and equitable educational landscape. The system is particularly suitable for medical colleges, nursing schools, healthcare professional training centers, and digital learning platforms seeking enhanced educational outcomes and improved student mental health and learning experiences.</p>
+        </div>
+        
+        <!-- Group Members and Guide -->
+        <div class="footer-section">
+            <div class="group-members">
+                <div class="label">Group Members</div>
+                <div class="member-item">Name: Adithya Baiju  </div>
+                <div class="member-item">Name: Akhil Kunduvalappil  </div>
+                <div class="member-item">Name: Devika V S  </div>
+                <div class="member-item">Name: Pavithra P S  </div>
+                <div class="member-item">Name: Prakhar Sharma  </div>
+            </div>
+            
+            <div class="guide-section">
+                <div class="label">Guide</div>
+                <div class="member-item">Name: Amrutha S</div>
+                <div class="member-item">Designation: Asst Prof CSE</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,535 @@
+# What: Declares UTF-8 encoding | Why: Supports special characters | Source: PEP 263
+# -*- coding: utf-8 -*-
+
+# What: Imports Streamlit | Why: Build web interface | Source: streamlit.io
+import streamlit as st
+# What: Imports OS | Why: Manage environment variables | Source: Python Docs
+import os
+# What: Imports tempfile | Why: Create temporary folders | Source: Python Docs
+import tempfile
+# What: Imports ElementTree | Why: Parse PubMed XML | Source: Python Docs
+import xml.etree.ElementTree as ET
+# What: Imports SimpleDirectoryReader | Why: Load PDF documents | Source: LlamaIndex Docs
+from llama_index.core import SimpleDirectoryReader
+# What: Imports VectorStoreIndex | Why: Create searchable index | Source: LlamaIndex Docs
+from llama_index.core import VectorStoreIndex
+# What: Imports Settings | Why: Configure global models | Source: LlamaIndex Docs
+from llama_index.core import Settings
+# What: Imports GoogleGenAI | Why: Use Gemini LLM | Source: LlamaIndex Docs
+from llama_index.llms.google_genai import GoogleGenAI
+# What: Imports GoogleGenAIEmbedding | Why: Generate text vectors | Source: LlamaIndex Docs
+from llama_index.embeddings.google_genai import GoogleGenAIEmbedding
+# What: Imports SentenceSplitter | Why: Chunk large text | Source: LlamaIndex Docs
+from llama_index.core.node_parser import SentenceSplitter
+# What: Imports Optional | Why: Type hint variables | Source: typing Docs
+from typing import Optional
+# What: Imports requests | Why: Call PubMed API | Source: requests Docs
+import requests
+
+# What: Calls page config | Why: Initialize layout | Source: Streamlit Docs
+st.set_page_config(
+    # What: Sets browser title | Why: Identify application | Source: Streamlit Docs
+    page_title="MedBuddy - Medical AI Assistant",
+    # What: Sets favicon icon | Why: Visual branding | Source: Streamlit Docs
+    page_icon="🩺",
+    # What: Centers app layout | Why: Improve readability | Source: Streamlit Docs
+    layout="centered",
+    # What: Expands sidebar | Why: Show controls | Source: Streamlit Docs
+    initial_sidebar_state="expanded"
+)
+
+# =============================================================================
+# MAIN APPLICATION INTERFACE
+# =============================================================================
+
+
+# What: Defines PubMed search | Why: Retrieve medical papers | Source: NCBI e-utils
+def _pubmed_search(term: str, retmax: int = 5, timeout_s: int = 15):
+    # What: Cleans search term | Why: Prevent empty queries | Source: Python Docs
+    term = (term or "").strip()
+    # What: Checks term presence | Why: Skip unnecessary calls | Source: Python Docs
+    if not term:
+        # What: Returns empty list | Why: Handle null input | Source: Python Docs
+        return []
+
+    # What: Sets search URL | Why: Query NCBI database | Source: NCBI Docs
+    esearch_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
+    # What: Sets summary URL | Why: Fetch paper details | Source: NCBI Docs
+    esummary_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
+
+    # What: Defines search params | Why: Configure NCBI request | Source: NCBI Docs
+    search_params = {
+        "db": "pubmed",
+        "term": term,
+        "retmode": "xml",
+        "retmax": str(retmax),
+        "sort": "relevance",
+    }
+
+    # What: Executes GET request | Why: Fetch PubMed IDs | Source: Requests Docs
+    r = requests.get(esearch_url, params=search_params, timeout=timeout_s)
+    # What: Validates HTTP status | Why: Ensure API success | Source: Requests Docs
+    r.raise_for_status()
+    # What: Parses XML response | Why: Extract data elements | Source: ElementTree Docs
+    root = ET.fromstring(r.text)
+    # What: Extracts ID list | Why: Identify relevant results | Source: ElementTree Docs
+    id_list = [elem.text for elem in root.findall(".//IdList/Id") if elem.text]
+    # What: Validates ID list | Why: Handle zero results | Source: Python Docs
+    if not id_list:
+        # What: Returns empty list | Why: Stop early safely | Source: Python Docs
+        return []
+
+    # What: Defines summary params | Why: Request detailed metadata | Source: NCBI Docs
+    summary_params = {
+        "db": "pubmed",
+        "id": ",".join(id_list),
+        "retmode": "json",
+    }
+    # What: Executes second GET | Why: Fetch metadata JSON | Source: Requests Docs
+    s = requests.get(esummary_url, params=summary_params, timeout=timeout_s)
+    # What: Validates second call | Why: Ensure metadata load | Source: Requests Docs
+    s.raise_for_status()
+    # What: Parses JSON response | Why: Access data fields | Source: Requests Docs
+    data = s.json()
+
+    # What: Initializes results list | Why: Store formatted items | Source: Python Docs
+    results = []
+    # What: Gets result dictionary | Why: Safeguard data access | Source: Python Docs
+    result = data.get("result", {})
+    # What: Gets UID list | Why: Iterate over responses | Source: Python Docs
+    uids = result.get("uids", [])
+    # What: Loops through UIDs | Why: process each result | Source: Python Docs
+    for uid in uids:
+        # What: Gets record details | Why: Access single paper | Source: Python Docs
+        rec = result.get(uid, {})
+        # What: Extracts title | Why: Display paper heading | Source: PubMed Docs
+        title = rec.get("title") or ""
+        # What: Extracts date | Why: Show publication time | Source: PubMed Docs
+        pubdate = rec.get("pubdate") or ""
+        # What: Extracts source | Why: Identify journal name | Source: PubMed Docs
+        source = rec.get("source") or ""
+        # What: Extracts authors | Why: Credit researchers | Source: PubMed Docs
+        authors = rec.get("authors") or []
+        # What: Formats author names | Why: Clean list display | Source: Python Docs
+        author_names = [a.get("name") for a in authors if isinstance(a, dict) and a.get("name")]
+        # What: Appends result dict | Why: Build structured list | Source: Python Docs
+        results.append(
+            {
+                "pmid": uid,
+                "title": title,
+                "pubdate": pubdate,
+                "journal": source,
+                "authors": author_names,
+                "url": f"https://pubmed.ncbi.nlm.nih.gov/{uid}/",
+            }
+        )
+    # What: Returns final list | Why: Provide search data | Source: PubMed Docs
+    return results
+
+# What: Defines main entry | Why: Orchestrate application flow | Source: Python Docs
+def main():
+    # What: Displays app title | Why: Set branding header | Source: Streamlit Docs
+    st.title("🩺 MedBuddy: Medical Textbook AI Assistant")
+    # What: Shows sub-header markdown | Why: Describe app utility | Source: Streamlit Docs
+    st.markdown("*Upload your medical textbook and ask questions with AI-powered precision*")
+    # What: Draws horizontal line | Why: Separate UI sections | Source: Streamlit Docs
+    st.markdown("---")
+    
+    # What: Opens sidebar context | Why: Organize input controls | Source: Streamlit Docs
+    with st.sidebar:
+        # What: Shows config header | Why: Label settings group | Source: Streamlit Docs
+        st.header("⚙️ Configuration")
+        
+        # What: Creates key input | Why: Capture API credentials | Source: Streamlit Docs
+        api_key = st.text_input(
+            "🔑 Google Gemini API Key",
+            type="password",
+            help="Get your API key from: https://makersuite.google.com/app/apikey",
+            placeholder="Enter your API key..."
+        )
+        
+        # What: Visual divider line | Why: Cleanup sidebar layout | Source: Streamlit Docs
+        st.markdown("---")
+        # What: Shows upload header | Why: Label file section | Source: Streamlit Docs
+        st.header("📚 Document Upload")
+        
+        # What: Creates file uploader | Why: accept PDF textbooks | Source: Streamlit Docs
+        uploaded_files = st.file_uploader(
+            "Upload Medical Textbooks (PDF)",
+            type=["pdf"],
+            accept_multiple_files=True,
+            help="Upload one or more medical textbook PDFs for AI analysis"
+        )
+        
+        # What: Checks for uploads | Why: Trigger status display | Source: Streamlit Docs
+        if uploaded_files:
+            # What: Shows success info | Why: Confirm file receipt | Source: Streamlit Docs
+            st.success(f"✅ {len(uploaded_files)} file(s) uploaded")
+            # What: Loops through files | Why: List each document | Source: Python Docs
+            for file in uploaded_files:
+                # What: Shows file details | Why: Display size info | Source: Streamlit Docs
+                st.info(f"📄 {file.name} ({file.size/1024/1024:.1f} MB)")
+    
+    # What: Checks key presence | Why: enforce API requirement | Source: Python Docs
+    api_key = api_key.strip() if api_key else ""
+    if not api_key:
+        # What: Displays key warning | Why: Instruction for user | Source: Streamlit Docs
+        st.warning("⚠️ Please enter your Google Gemini API Key in the sidebar to continue.")
+        # What: Shows help info | Why: Guide key acquisition | Source: Streamlit Docs
+        st.info("💡 **Need an API Key?**\n\n1. Visit [Google AI Studio](https://makersuite.google.com/app/apikey)\n2. Create a new API key\n3. Copy and paste it in the sidebar")
+        # What: Halts app execution | Why: Wait for input | Source: Streamlit Docs
+        st.stop()
+    
+    # What: Sets environment var | Why: configure backend SDK | Source: Python Docs
+    os.environ["GOOGLE_API_KEY"] = api_key
+    
+    # What: Instantiates LLM model | Why: Set generation engine | Source: LlamaIndex Docs
+    Settings.llm = GoogleGenAI(
+        model="models/gemini-3.1-flash-lite-preview",
+        api_key=api_key,
+        temperature=0.1,
+    )
+
+    # What: Instantiates Embedding model | Why: Set vector engine | Source: LlamaIndex Docs
+    Settings.embed_model = GoogleGenAIEmbedding(
+        model_name="models/embedding-001",
+        api_key=api_key,
+    )
+    
+    # What: Configures text splitter | Why: Manage document chunking | Source: LlamaIndex Docs
+    Settings.text_splitter = SentenceSplitter(
+        chunk_size=1024,      # What: Sets chunk size | Why: Process medical text | Source: LlamaIndex Docs
+        chunk_overlap=100,    # What: Sets overlap | Why: Maintain text context | Source: LlamaIndex Docs
+        separator=" "         # What: Sets separator | Why: natural word splits | Source: LlamaIndex Docs
+    )
+    
+    # What: Checks message state | Why: Initialize chat history | Source: Streamlit Docs
+    if "messages" not in st.session_state:
+        # What: Sets empty list | Why: store user dialogue | Source: Python Docs
+        st.session_state.messages = []
+    
+    # What: Checks engine state | Why: Initialize RAG query | Source: Streamlit Docs
+    if "query_engine" not in st.session_state:
+        # What: Sets None value | Why: placeholder for index | Source: Python Docs
+        st.session_state.query_engine = None
+    
+    # What: Checks file tracking | Why: detect processing changes | Source: Streamlit Docs
+    if "processed_files" not in st.session_state:
+        # What: Sets empty list | Why: store filename history | Source: Python Docs
+        st.session_state.processed_files = []
+    
+    # What: Checks document count | Why: Track library size | Source: Streamlit Docs
+    if "total_documents" not in st.session_state:
+        # What: Sets zero count | Why: initial doc counter | Source: Python Docs
+        st.session_state.total_documents = 0
+
+    # What: Checks PubMed cache | Why: Persist search results | Source: Streamlit Docs
+    if "pubmed_last_results" not in st.session_state:
+        # What: Sets empty list | Why: store recent lookup | Source: Python Docs
+        st.session_state.pubmed_last_results = []
+    
+    # What: Checks for new indexing | Why: skip redundant processing | Source: Python Docs
+    if uploaded_files and st.session_state.query_engine is None:
+        # What: Extract file names | Why: track uploaded library | Source: Python Docs
+        current_files = [file.name for file in uploaded_files]
+        # What: Checks file changes | Why: detect upload updates | Source: Python Docs
+        if current_files != st.session_state.processed_files:
+            # What: Shows loader spinner | Why: feedback during indexing | Source: Streamlit Docs
+            with st.spinner("🔄 Processing medical textbooks... This may take a few minutes."):
+                # What: Starts error block | Why: Handle processing failures | Source: Python Docs
+                try:
+                    # What: Opens temp directory | Why: Secure file handling | Source: Python Docs
+                    with tempfile.TemporaryDirectory() as temp_dir:
+                        # What: Loops through uploads | Why: Save each file | Source: Python Docs
+                        for uploaded_file in uploaded_files:
+                            # What: joins file path | Why: create valid destination | Source: Python Docs
+                            file_path = os.path.join(temp_dir, uploaded_file.name)
+                            # What: Opens local file | Why: Write binary data | Source: Python Docs
+                            with open(file_path, "wb") as f:
+                                # What: Writes file buffer | Why: persistence for LlamaIndex | Source: Streamlit Docs
+                                f.write(uploaded_file.getbuffer())
+                        
+                        # What: Loads text data | Why: ingest textbook PDF | Source: LlamaIndex Docs
+                        documents = SimpleDirectoryReader(temp_dir).load_data()
+                        
+                        # What: Counts total chunks | Why: store data stats | Source: Python Docs
+                        st.session_state.total_documents = len(documents)
+                        # What: Displays chunk info | Why: User progress update | Source: Streamlit Docs
+                        st.info(f"📊 Processed {len(documents)} document chunks from {len(uploaded_files)} files")
+                        
+                        # What: Builds vector index | Why: Enable semantic search | Source: LlamaIndex Docs
+                        index = VectorStoreIndex.from_documents(documents)
+                        
+                        # What: initializes query engine | Why: Setup RAG interface | Source: LlamaIndex Docs
+                        st.session_state.query_engine = index.as_query_engine(
+                            # What: Sets search depth | Why: retrieve relevant context | Source: LlamaIndex Docs
+                            similarity_top_k=5,
+                            # What: Sets response mode | Why: efficient text synthesis | Source: LlamaIndex Docs
+                            response_mode="compact"
+                        )
+                        
+                        # What: Updates file tracking | Why: Prevent duplicate runs | Source: Python Docs
+                        st.session_state.processed_files = current_files
+                        
+                        # What: Shows success alert | Why: Confirm finish indexing | Source: Streamlit Docs
+                        st.success(f"✅ Successfully indexed {len(uploaded_files)} medical textbooks!")
+                        # What: Shows ready message | Why: Signal user chat | Source: Streamlit Docs
+                        st.info(f"🔍 Ready to answer questions from {st.session_state.total_documents} document chunks")
+                        
+                # What: Catches processing errors | Why: Prevent app crash | Source: Python Docs
+                except Exception as e:
+                    # What: Shows error message | Why: inform user breakdown | Source: Streamlit Docs
+                    st.error(f"❌ Error processing documents: {str(e)}")
+                    # What: Displays fix tips | Why: guide user recovery | Source: Streamlit Docs
+                    st.info("💡 **Troubleshooting tips:**\n- Check if PDF files are not corrupted\n- Ensure API key is valid\n- Try uploading smaller files first")
+                    # What: Stops script execution | Why: Halt broken state | Source: Streamlit Docs
+                    st.stop()
+
+    # What: Defines UI tabs | Why: Organize interface layout | Source: Streamlit Docs
+    tab_chat, tab_docs, tab_pubmed, tab_about = st.tabs(["Chat", "Documents", "PubMed", "About"])
+    
+    # What: Opens chat tab | Why: contain message logic | Source: Streamlit Docs
+    with tab_chat:
+        # What: Loops through history | Why: render previous messages | Source: Python Docs
+        for message in st.session_state.messages:
+            # What: displays chat bubble | Why: show role avatars | Source: Streamlit Docs
+            with st.chat_message(message["role"], avatar="🧑‍⚕️" if message["role"] == "user" else "🤖"):
+                # What: Renders text markdown | Why: format message display | Source: Streamlit Docs
+                st.markdown(message["content"])
+
+        # What: Creates chat container | Why: capture new messages | Source: Streamlit Docs
+        chat_container = st.container()
+
+        # What: Creates layout columns | Why: align action buttons | Source: Streamlit Docs
+        col_a, col_b = st.columns([1, 1])
+        # What: target first column | Why: place clear button | Source: Streamlit Docs
+        with col_a:
+            # What: adds clear button | Why: reset chat history | Source: Streamlit Docs
+            if st.button("Clear chat", use_container_width=True):
+                # What: wipes message list | Why: start fresh session | Source: Python Docs
+                st.session_state.messages = []
+                # What: reruns streamlit | Why: Refresh UI state | Source: Streamlit Docs
+                st.rerun()
+        # What: target second column | Why: place reset button | Source: Streamlit Docs
+        with col_b:
+            # What: adds reset button | Why: rebuild vector index | Source: Streamlit Docs
+            if st.button("Reset index", use_container_width=True):
+                # What: clears query engine | Why: Force re-indexing | Source: Python Docs
+                st.session_state.query_engine = None
+                # What: clears file history | Why: Cleanup state tracking | Source: Python Docs
+                st.session_state.processed_files = []
+                # What: resets doc count | Why: Update UI stats | Source: Python Docs
+                st.session_state.total_documents = 0
+                # What: reruns streamlit | Why: Refresh UI state | Source: Streamlit Docs
+                st.rerun()
+
+    # What: Opens docs tab | Why: list uploaded files | Source: Streamlit Docs
+    with tab_docs:
+        # What: Checks for uploads | Why: toggle file list | Source: Python Docs
+        if uploaded_files:
+            # What: Shows docs subheader | Why: Label file section | Source: Streamlit Docs
+            st.subheader("Uploaded files")
+            # What: Loops through files | Why: display names | Source: Python Docs
+            for f in uploaded_files:
+                # What: Writes filename | Why: confirm doc presence | Source: Streamlit Docs
+                st.write(f"- {f.name} ({f.size/1024/1024:.1f} MB)")
+        # What: executes fallback | Why: Handle zero files | Source: Python Docs
+        else:
+            # What: Shows info note | Why: empty state feedback | Source: Streamlit Docs
+            st.info("No PDFs uploaded yet.")
+
+        # What: Checks engine state | Why: toggle status info | Source: Python Docs
+        if st.session_state.query_engine:
+            # What: Shows ready success | Why: confirm index load | Source: Streamlit Docs
+            st.success("Index ready")
+            # What: writes file count | Why: show library scale | Source: Streamlit Docs
+            st.write(f"Textbooks indexed: {len(st.session_state.processed_files)}")
+            # What: writes chunk count | Why: show indexing depth | Source: Streamlit Docs
+            st.write(f"Chunks searchable: {st.session_state.total_documents}")
+        # What: executes fallback | Why: Handle missing index | Source: Python Docs
+        else:
+            # What: Shows warning note | Why: notify setup needed | Source: Streamlit Docs
+            st.warning("Index not built yet")
+
+    # What: Opens pubmed tab | Why: offer paper search | Source: Streamlit Docs
+    with tab_pubmed:
+        # What: Shows pubmed header | Why: Label lookup section | Source: Streamlit Docs
+        st.subheader("PubMed quick lookup (optional)")
+        # What: Shows caption text | Why: clarify search scope | Source: Streamlit Docs
+        st.caption("This searches PubMed for recent/relevant paper metadata. It does not use your Gemini key.")
+        # What: Accepts search term | Why: capture paper query | Source: Streamlit Docs
+        term = st.text_input("Search term", placeholder="e.g., diabetic ketoacidosis treatment")
+        # What: Creates UI columns | Why: align search button | Source: Streamlit Docs
+        col1, col2 = st.columns([1, 2])
+        # What: targets first col | Why: nest action button | Source: Streamlit Docs
+        with col1:
+            # What: adds search button | Why: trigger API call | Source: Streamlit Docs
+            run_search = st.button("Search PubMed", use_container_width=True)
+        # What: targets second col | Why: maintain layout spacing | Source: Streamlit Docs
+        with col2:
+            # What: writes empty space | Why: layout padding | Source: Streamlit Docs
+            st.write(" ")
+
+        # What: checks button click | Why: initiate API flow | Source: Python Docs
+        if run_search:
+            # What: shows loading spinner | Why: feedback during API | Source: Streamlit Docs
+            with st.spinner("Searching PubMed..."):
+                # What: starts error block | Why: handle HTTP failures | Source: Python Docs
+                try:
+                    # What: calls search helper | Why: fetch paper data | Source: PubMed API
+                    st.session_state.pubmed_last_results = _pubmed_search(term=term, retmax=5)
+                # What: catches search error | Why: handle network bug | Source: Python Docs
+                except Exception as e:
+                    # What: clears result list | Why: reset state safely | Source: Python Docs
+                    st.session_state.pubmed_last_results = []
+                    # What: shows error alert | Why: notify API failure | Source: Streamlit Docs
+                    st.error(f"PubMed lookup failed: {str(e)}")
+
+        # What: checks cached results | Why: display recent items | Source: Python Docs
+        if st.session_state.pubmed_last_results:
+            # What: loops through items | Why: render each paper | Source: Python Docs
+            for item in st.session_state.pubmed_last_results:
+                # What: writes paper title | Why: display primary Info | Source: Streamlit Docs
+                st.markdown(f"**{item['title']}**")
+                # What: initializes meta list | Why: store display labels | Source: Python Docs
+                meta_parts = []
+                # What: checks journal key | Why: format journal info | Source: Python Docs
+                if item.get("journal"):
+                    # What: appends journal name | Why: build meta string | Source: Python Docs
+                    meta_parts.append(item["journal"])
+                # What: checks date key | Why: format date Info | Source: Python Docs
+                if item.get("pubdate"):
+                    # What: appends pub date | Why: build meta string | Source: Python Docs
+                    meta_parts.append(item["pubdate"])
+                # What: checks author key | Why: format researcher Info | Source: Python Docs
+                if item.get("authors"):
+                    # What: joins author names | Why: build meta string | Source: Python Docs
+                    meta_parts.append(", ".join(item["authors"][:4]) + (" et al." if len(item["authors"]) > 4 else ""))
+                # What: checks meta presence | Why: toggle caption display | Source: Python Docs
+                if meta_parts:
+                    # What: shows joined caption | Why: display paper meta | Source: Streamlit Docs
+                    st.caption(" | ".join(meta_parts))
+                # What: adds link button | Why: open PubMed site | Source: Streamlit Docs
+                st.link_button("Open on PubMed", item["url"], use_container_width=False)
+                # What: draws visual line | Why: separate result items | Source: Streamlit Docs
+                st.divider()
+        # What: executes fallback | Why: handle empty results | Source: Python Docs
+        else:
+            # What: shows info note | Why: prompt user search | Source: Streamlit Docs
+            st.info("Run a search to view results.")
+
+    # What: Opens about tab | Why: present app Info | Source: Streamlit Docs
+    with tab_about:
+        # What: shows about header | Why: label Info group | Source: Streamlit Docs
+        st.subheader("About")
+        # What: writes app summary | Why: explain MedBuddy purpose | Source: Streamlit Docs
+        st.write("MedBuddy is a Retrieval-Augmented Generation (RAG) medical chatbot that answers questions grounded in your uploaded textbooks.")
+        # What: writes safety note | Why: medical liability disclaimer | Source: Streamlit Docs
+        st.write("For safety: this is not medical advice.")
+    
+    # What: targets sidebar scope | Why: add help section | Source: Streamlit Docs
+    with st.sidebar:
+        # What: visual divider line | Why: Cleanup side layout | Source: Streamlit Docs
+        st.markdown("---")
+        # What: shows tips header | Why: Label guide section | Source: Streamlit Docs
+        st.header("ℹ️ Usage Tips")
+        
+        # What: checks engine state | Why: toggle status icons | Source: Python Docs
+        if st.session_state.query_engine:
+            # What: shows ready alert | Why: confirm operational state | Source: Streamlit Docs
+            st.success("✅ System Ready")
+            # What: writes index count | Why: display library info | Source: Streamlit Docs
+            st.info(f"📚 {len(st.session_state.processed_files)} textbooks indexed")
+            # What: writes chunk count | Why: display data Info | Source: Streamlit Docs
+            st.info(f"📄 {st.session_state.total_documents} chunks searchable")
+            
+            # What: writes bold text | Why: label tip list | Source: Streamlit Docs
+            st.markdown("**Tips for better results:**")
+            # What: writes tip item | Why: suggest question style | Source: Streamlit Docs
+            st.markdown("- Ask specific medical questions")
+            # What: writes tip item | Why: suggest medical terms | Source: Streamlit Docs
+            st.markdown("- Use medical terminology")
+            # What: writes tip item | Why: suggest condition reference | Source: Streamlit Docs
+            st.markdown("- Reference conditions or treatments")
+            # What: writes tip item | Why: suggest drug queries | Source: Streamlit Docs
+            st.markdown("- Ask about drug information")
+        # What: executes fallback | Why: notify setup step | Source: Python Docs
+        else:
+            # What: shows processing warn | Why: signal index missing | Source: Streamlit Docs
+            st.warning("⚠️ No documents processed")
+            # What: shows startup info | Why: Direct new user | Source: Streamlit Docs
+            st.info("Upload PDFs to get started!")
+        
+        # What: visual divider line | Why: Cleanup side layout | Source: Streamlit Docs
+        st.markdown("---")
+        # What: shows bold text | Why: label privacy section | Source: Streamlit Docs
+        st.markdown("**🔒 Privacy Notice**")
+        # What: writes privacy info | Why: clarify data handling | Source: Streamlit Docs
+        st.markdown("All processing happens locally. Your documents are not stored permanently.")
+
+    # What: Accepts chat input | Why: capture user questions | Source: Streamlit Docs
+    if prompt := st.chat_input(
+        "Ask a medical question from your textbooks...",
+        key="user_query",
+        # What: Limits input length | Why: prevent overly long | Source: Streamlit Docs
+        max_chars=500
+    ):
+        # What: targets chat container | Why: display inside tab | Source: Streamlit Docs
+        with chat_container:
+            # What: Checks engine readiness | Why: Ensure rag availability | Source: Python Docs
+            if st.session_state.query_engine is None:
+                # What: Shows error prompt | Why: direct user flow | Source: Streamlit Docs
+                st.error("📚 Please upload medical textbook PDFs in the sidebar first.")
+                # What: Shows help guide | Why: orient new users | Source: Streamlit Docs
+                st.info("💡 **Getting Started:**\n1. Upload one or more medical textbook PDFs\n2. Wait for processing to complete\n3. Start asking questions!")
+            # What: Executes query path | Why: Process valid input | Source: Python Docs
+            else:
+                # What: Appends user msg | Why: Persist message history | Source: Python Docs
+                st.session_state.messages.append({"role": "user", "content": prompt})
+
+                # What: Shows user bubble | Why: instant visual feedback | Source: Streamlit Docs
+                with st.chat_message("user", avatar="🧑‍⚕️"):
+                    # What: Renders user prompt | Why: display typed text | Source: Streamlit Docs
+                    st.markdown(prompt)
+
+                # What: Shows assistant bubble | Why: prepare response area | Source: Streamlit Docs
+                with st.chat_message("assistant", avatar="🤖"):
+                    # What: Shows thinking spinner | Why: indicate background work | Source: Streamlit Docs
+                    with st.spinner("🤔 Thinking and searching textbooks..."):
+                        # What: Starts generation block | Why: catch model errors | Source: Python Docs
+                        try:
+                            # What: Queries RAG engine | Why: generate medical answer | Source: LlamaIndex Docs
+                            response = st.session_state.query_engine.query(prompt)
+                            # What: Renders model output | Why: display AI response | Source: Streamlit Docs
+                            st.markdown(response.response)
+
+                            # What: checks source nodes | Why: show grounding proof | Source: Python Docs
+                            if hasattr(response, 'source_nodes') and response.source_nodes:
+                                # What: Opens expander tab | Why: hide technical details | Source: Streamlit Docs
+                                with st.expander("📖 Source Information"):
+                                    # What: Loops through nodes | Why: list top sources | Source: Python Docs
+                                    for i, node in enumerate(response.source_nodes[:3], 1):
+                                        # What: Shows source snippet | Why: provide medical evidence | Source: Streamlit Docs
+                                        st.info(f"**Source {i}:**\n{node.text[:200]}...")
+
+                            # What: Appends assistant msg | Why: complete history cycle | Source: Python Docs
+                            st.session_state.messages.append({
+                                "role": "assistant",
+                                "content": response.response
+                            })
+
+                        # What: catches response error | Why: handle model failure | Source: Python Docs
+                        except Exception as e:
+                            # What: Displays error alert | Why: inform users breakdown | Source: Streamlit Docs
+                            st.error(f"❌ Error generating response: {str(e)}")
+                            # What: Shows rephrase hint | Why: assist user correction | Source: Streamlit Docs
+                            st.info("💡 **Try rephrasing your question** or check if the information exists in your uploaded textbooks.")
+
+# =============================================================================
+# APPLICATION ENTRY POINT
+# =============================================================================
+
+# What: Checks main script | Why: designate entry point | Source: Python Docs
+if __name__ == "__main__":
+    # What: Executes main logic | Why: Launch application | Source: Python Docs
+    main()
