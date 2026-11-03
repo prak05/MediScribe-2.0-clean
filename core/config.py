@@ -8,34 +8,9 @@ from typing import List, Optional
 import os
 
 def load_default_api_key() -> str:
-    """Resolve Gemini API key from environment, .env file, or legacy api.txt."""
-    # 1. Environment variable
+    """Resolve the Gemini API key from the runtime environment."""
     key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
-    if key and key.strip():
-        return key.strip()
-
-    # 2. Look in local .env files
-    candidates = [
-        Path("/home/prak05/MediScribe/.env"),
-        Path("/home/prak05/GITHUB/windsurf/MediScribe-AI/.env"),
-        Path("/home/prak05/Desktop/mini projectx/Medbuddy/api.txt"),
-    ]
-    for c in candidates:
-        if c.exists():
-            try:
-                content = c.read_text(encoding="utf-8").strip()
-                for line in content.splitlines():
-                    line = line.strip()
-                    if line.startswith("GEMINI_API_KEY="):
-                        val = line.split("=", 1)[1].strip().strip('"').strip("'")
-                        if val:
-                            return val
-                    elif line.startswith("AIzaSy"):
-                        return line
-            except Exception:
-                continue
-
-    return "[REDACTED]"
+    return key.strip() if key and key.strip() else ""
 
 @dataclass
 class DataConfig:
