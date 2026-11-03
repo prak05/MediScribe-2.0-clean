@@ -94,3 +94,20 @@ python3 -m core.benchmarks.load_test --queries 6 --concurrency 2
 ## 🏛️ Alignment with Abhilash Sir's Vision
 
 See [`docs/10_COMMANDMENTS.md`](docs/10_COMMANDMENTS.md) and [`ARCHITECTURE.md`](ARCHITECTURE.md) for full architectural mapping and decision records.
+
+## Portfolio brief
+
+An evidence-grounded medical knowledge and clinical workflow platform for document retrieval, cited answers, and review-oriented tooling.
+
+### Visual system
+
+Apple-inspired clinical calm: generous whitespace, neutral surfaces, precise typography, and restrained health-system accents.
+
+### Architecture
+
+The platform separates ingestion, chunking, retrieval, generation, API services, and interactive interfaces. Local mode is the default; provider credentials are supplied only through environment configuration.
+
+### Run and output
+
+Follow the repository setup instructions for the Python service and web interfaces. Outputs should retain source references and clinical disclaimers.
+
