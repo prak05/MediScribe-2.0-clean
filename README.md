@@ -1,61 +1,97 @@
-# MediScribe AI Platform — Clinical Ambient Intelligence & Medical EHR RAG
+<div align="center">
 
-[![AWS Bedrock](https://img.shields.io/badge/AWS-Bedrock%20%7C%20Transcribe-FF9900?logo=amazon-aws&logoColor=white)](#aws-cloud-architecture)
-[![Stack](https://img.shields.io/badge/Stack-FastMCP%20%7C%20Next.js%20%7C%20Python-0052CC)](#system-architecture)
-[![Branch Status](https://img.shields.io/badge/Preservation-Ex%20Branch-22C55E)](#branch-architecture)
-[![License: MIT](https://img.shields.io/badge/License-MIT-gray.svg)](LICENSE)
+# 🩺 MediScribe AI Platform
+### Clinical Ambient Intelligence & Medical EHR Synthesis Engine
 
-> Autonomous clinical transcription, EHR entity extraction, and structured SOAP note synthesis designed for high-throughput healthcare environments.
+<p align="center">
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=22&pause=1200&color=10B981&center=true&vCenter=true&width=750&lines=MediScribe+AI+Platform;Clinical+Ambient+Intelligence+%26+EHR+RAG;Amazon+Transcribe+Medical+%2B+Bedrock;Autonomous+SOAP+Note+Generation" alt="Typing SVG" />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/AWS-Transcribe_Medical-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white" />
+  <img src="https://img.shields.io/badge/LLM-Bedrock_Claude_3.5-6366F1?style=for-the-badge&logo=anthropic&logoColor=white" />
+  <img src="https://img.shields.io/badge/Protocol-FastMCP_2.0-0052CC?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Security-HIPAA_KMS_Ready-22C55E?style=for-the-badge" />
+</p>
+
+<img src="https://skillicons.dev/icons?i=python,nextjs,ts,aws,docker,fastapi&theme=dark" alt="Stack" />
+
+</div>
 
 ---
 
-## 1. Executive Brief
-Physicians spend upwards of 2 hours per shift charting EHR notes. **MediScribe AI Platform** captures ambient doctor-patient dialogue, transcribes clinical terminology via Amazon Transcribe Medical, extracts ICD-10/SNOMED entities, and generates standardized SOAP notes ready for export.
+### 🎙️ Ambient Consultation Telemetry
 
-* **Preservation**: Original codebase preserved on [`Ex`](https://github.com/prak05/MediScribe-AI-Platform/tree/Ex).
-* **Architecture**: AWS Cloud Native with FastMCP agentic tools and WeasyPrint clinical note generation.
+```yaml
+Audio Stream   : 16kHz PCM FLAC (Encrypted via AWS KMS)
+Speech Engine  : Amazon Transcribe Medical (Primary Care Dictation)
+Latency        : Real-time chunking (2.4s sliding window)
+Entities Found : [ICD-10-CM: I10 Essential Hypertension], [RxNorm: Lisinopril 10mg]
+Output Format  : Verified Clinical SOAP Note (WeasyPrint PDF + JSON EHR)
+```
 
 ---
 
-## 2. AWS Cloud Architecture
+## 🏛️ Clinical Bento Grid
+
+<table width="100%">
+  <tr>
+    <td width="50%" valign="top">
+      <h3>🩺 Ambient Audio to SOAP Note</h3>
+      <p>Direct speech-to-clinical text conversion isolating doctor and patient speaker channels, extracting symptoms, vitals, and producing structured SOAP documentation.</p>
+      <b>Features:</b> Subjective, Objective, Assessment, Plan separation
+    </td>
+    <td width="50%" valign="top">
+      <h3>🛡️ FastMCP Medical Protocol</h3>
+      <p>Custom <b>Model Context Protocol (MCP)</b> microservice enabling LLM agents to safely query drug-drug interactions and dosage calculators without leaving context.</p>
+      <b>Features:</b> Standardized tool calls • Deterministic outputs
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>📑 Clean WeasyPrint PDF Pipeline</h3>
+      <p>High-speed, institutional PDF rendering using CSS Paged Media standards. Completely eliminated fragile headless browser dependencies (Playwright).</p>
+      <b>Features:</b> Millisecond note compilation • Custom clinic branding
+    </td>
+    <td width="50%" valign="top">
+      <h3>🔒 KMS Envelope Encryption & PHI Vault</h3>
+      <p>Patient identifiers are dynamically pseudonymized before any LLM inference occurs. Data at rest is encrypted using customer-managed AWS KMS keys.</p>
+      <b>Features:</b> Zero data retention mode • Audit logs in DynamoDB
+    </td>
+  </tr>
+</table>
+
+---
+
+## 🔄 Clinical Streaming Flow
 
 ```mermaid
-flowchart TD
-    Audio["Doctor-Patient Ambient Audio"] --> S3Audio["Amazon S3 (Encrypted Audio Vault)"]
-    S3Audio --> Transcribe["Amazon Transcribe Medical (Speech-to-Text)"]
-    Transcribe --> Comprehend["Amazon Comprehend Medical (ICD-10 / RxNorm Extraction)"]
-    Comprehend --> Bedrock["Amazon Bedrock (Claude 3.5 Sonnet SOAP Synthesis)"]
-    Bedrock --> FastMCP["FastMCP Agent Service (ECS Fargate)"]
-    FastMCP --> WeasyPrint["WeasyPrint PDF Formatter"]
-    WeasyPrint --> S3Notes["Amazon S3 (Clinical Notes Archive)"]
-    FastMCP --> Dynamo["Amazon DynamoDB (Encrypted Patient EHR Metadata)"]
-    EHR["Hospital EHR / Web Dashboard"] --> NextJS["Next.js Front-End (Amplify / CloudFront)"]
-    NextJS --> FastMCP
+flowchart LR
+    Mic["Doctor-Patient Dialogue"] --> S3Audio["Encrypted S3 Audio"]
+    S3Audio --> Transcribe["Amazon Transcribe Medical"]
+    Transcribe --> Comprehend["Comprehend Medical (RxNorm/ICD-10)"]
+    Comprehend --> Bedrock["Bedrock Claude 3.5 (SOAP Synthesis)"]
+    Bedrock --> FastMCP["FastMCP Clinical Agent"]
+    FastMCP --> WeasyPrint["WeasyPrint PDF Generator"]
+    WeasyPrint --> S3Notes["S3 Patient Records"]
 ```
 
 ---
 
-## 3. Key Enhancements
-1. **FastMCP Server**: Standardized Model Context Protocol server exposing clinical tools (`retrieve_guideline`, `validate_dosage`, `format_soap_note`).
-2. **WeasyPrint Clean Pipeline**: Eliminated fragile headless browser dependencies (Playwright) in favor of high-performance WeasyPrint CSS-to-PDF formatting.
-3. **KMS & PHI Protection**: Zero logging of patient identifiers; dynamic pseudonymization of names and dates before LLM ingestion.
-
----
-
-## 4. Run & Deployment Runbook
+## ⚡ Quickstart
 
 ```bash
-# Run locally with Docker Compose
-docker compose up -d
+# Clone repository
+git clone https://github.com/prak05/MediScribe-AI-Platform.git
+cd MediScribe-AI-Platform
 
-# Deploy to AWS ECS Fargate
-cd infra/aws && terraform apply
+# Start services locally
+docker compose up -d
+open http://localhost:3000
 ```
 
 ---
 
-## 5. Branch Architecture
-* [`main`](https://github.com/prak05/MediScribe-AI-Platform/tree/main): Modernized AWS Mantle architecture with FastMCP and WeasyPrint.
-* [`Ex`](https://github.com/prak05/MediScribe-AI-Platform/tree/Ex): Preserved baseline snapshot.
-
-<!-- antigravity-certified -->
+<div align="center">
+<sub>Preserved Baseline: <a href="https://github.com/prak05/MediScribe-AI-Platform/tree/Ex">branch Ex</a> • Engineered for Scalable Production Clouds</sub>
+</div>
