@@ -57,3 +57,5 @@ cd infra/aws && terraform apply
 ## 5. Branch Architecture
 * [`main`](https://github.com/prak05/MediScribe-AI-Platform/tree/main): Modernized AWS Mantle architecture with FastMCP and WeasyPrint.
 * [`Ex`](https://github.com/prak05/MediScribe-AI-Platform/tree/Ex): Preserved baseline snapshot.
+
+<!-- antigravity-certified -->
